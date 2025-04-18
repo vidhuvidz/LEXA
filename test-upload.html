@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>File Upload Test</h2>
+  <input type="file" id="file-upload" />
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    document.getElementById('file-upload').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "Uploading...";
+
+      // Create FormData and append the file
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        // Send to your Next.js API endpoint
+        const response = await fetch('http://localhost:3000/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+
+        // Display results
+        resultDiv.innerHTML = `
+          <h3>Success!</h3>
+          <p><strong>Type:</strong> ${data.type}</p>
+          <p><strong>Text:</strong> ${data.text.substring(0, 100)}...</p>
+          ${data.preview ? `<img src="${data.preview}" width="200" />` : ''}
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

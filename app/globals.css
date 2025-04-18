@@ -1,0 +1,74 @@
+/* app/globals.css */
+
+/* Import the Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+/* Tailwind base, components, and utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .fade-in {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+
+/* Global font family */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- Custom .prose overrides for more compact spacing --- */
+/* Applies when you use className="prose prose-sm" */
+.prose.prose-sm p {
+  margin-top: 0.4em;    /* reduced from 0.5em */
+  margin-bottom: 0.4em; /* reduced from 0.5em */
+  line-height: 1.25;    /* tighter line spacing */
+}
+
+.prose.prose-sm ul,
+.prose.prose-sm ol {
+  margin-top: 0.4em;
+  margin-bottom: 0.4em;
+  line-height: 1.25;
+}
+
+.prose.prose-sm li {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+.prose.prose-sm :where(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0.4em;
+  margin-bottom: 0.4em;
+  line-height: 1.2;
+}
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+

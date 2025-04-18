@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<input type="file" id="uploader">
+<script>
+  document.getElementById('uploader').onchange = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      console.log(await res.json());
+    } catch (err) {
+      console.error('Upload failed:', err);
+    }
+  };
+</script>
