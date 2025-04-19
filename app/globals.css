@@ -73,10 +73,17 @@ body {
 
 /* --- Lexa Markdown Feedback Styling --- */
 .markdown-content {
-  @apply prose prose-sm text-sm leading-snug text-gray-800;
-  max-width: 100%;
-  line-height: 1.4;
+  @apply prose text-base leading-relaxed text-gray-800;
+  max-width: 85ch;
+  line-height: 1.6;
+  font-size: 1rem; /* equivalent to 16px */
+  padding: 1rem 1.25rem;
+  background-color: #FFF5F6;
+  border-left: 4px solid #fb7185;
+  border: 1px solid black;
+  border-radius: 0.5rem;
 }
+
 
 .markdown-content h3 {
   @apply font-semibold text-[15px] mt-4 mb-2 text-blue-900;

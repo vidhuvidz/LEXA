@@ -119,6 +119,16 @@ setEssayStep("evidence");
     }
   };
 
+  function extractBoldText(md: string): string {
+    const match = /\*\*(.*?)\*\*/.exec(md);
+    return match ? match[1] : "";
+  }
+  
+  function stripBoldText(md: string): string {
+    return md.replace(/\*\*(.*?)\*\*/, "").trim().replace(/^[:\-–\s]*/, "");
+  }
+  
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -138,12 +148,8 @@ setEssayStep("evidence");
           "",
           "Now let's explain how this evidence supports your point.",
           "",
-          (() => {
-            const pointTitle = selectedPoint.match(/\*\*(.*?)\*\*/)?.[1] || selectedPoint;
-            const pointRest = selectedPoint.replace(/\*\*(.*?)\*\*/, "").trim();
-            return `### 📘 ${pointTitle}\n${pointRest}`;
-          })(),
-          
+          `### 📘 Your Point\n<span style="font-size: 18px; font-weight: bold; color: black;">${extractBoldText(selectedPoint)}</span>: ${stripBoldText(selectedPoint)}`
+,
           "",
           `### 📌 Your Evidence\n${evidence?.optionB || evidence?.optionA}`,
           "",
