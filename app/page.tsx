@@ -27,6 +27,7 @@ export default function Home() {
     role: "assistant",
     content: "👋 Hi there! Click the **Essay Help** button on the left to get started. I'll guide you through writing an awesome PEEL paragraph!",
   }]);
+  const [showContinueAnyway, setShowContinueAnyway] = useState(false);
 
   const pushUser = (text: string) => setMessages((m) => [...m, { role: "user", content: text }]);
   const pushAssistant = (text: string) => setMessages((m) => [...m, { role: "assistant", content: text }]);
@@ -86,9 +87,10 @@ export default function Home() {
       });
       const data = await res.json();
       setEvidence({ optionA: data.weak, optionB: data.strong });
+      setShowContinueAnyway(false);
       pushAssistant("💡 Here are two evidence options. Pick one to continue:");
       pushAssistant(`🔸 **Option A (Weak):** ${data.weak}`);
-pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
+      pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
       setEssayStep("evidence");
     } catch {
       alert("Failed to generate evidence.");
@@ -156,8 +158,8 @@ pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
               <button
                 onClick={() => {
                   pushUser("Evidence selected: Option A (Weak)");
-                  pushAssistant("📖 Great! Now explain how this evidence supports your point.");
-                  setEssayStep("explanation");
+                  pushAssistant("🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?");
+                  setShowContinueAnyway(true);
                 }}
                 className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
               >Option A (Weak)</button>
@@ -169,6 +171,15 @@ pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
                 }}
                 className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
               >Option B (Strong)</button>
+              {showContinueAnyway && (
+                <button
+                  onClick={() => {
+                    pushAssistant("📘 Alright, go ahead and explain how this evidence supports your point.");
+                    setEssayStep("explanation");
+                  }}
+                  className="w-full mt-2 bg-blue-500 text-white py-2 px-4 rounded"
+                >Continue with Option A</button>
+              )}
             </div>
           )}
         </div>
