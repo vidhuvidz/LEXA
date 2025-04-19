@@ -138,17 +138,18 @@ export default function Home() {
           "",
           "Now let's explain how this evidence supports your point.",
           "",
-          `📘 **Your Point:** ${selectedPoint}`,
-          `📌 **Your Evidence:** ${evidence?.optionB || evidence?.optionA}`,
+          `### 📘 Your Point\n${selectedPoint}`,
+          "",
+          `### 📌 Your Evidence\n${evidence?.optionB || evidence?.optionA}`,
           "",
           "---",
-          "**Think about:**",
+          "### 🧠 Think about:",
           "- What effect did this have?",
           "- Why does this matter?",
           "- How did this contribute to tensions?",
           "",
           "---",
-          "**You can start with:**",
+          "### 📝 You can start with:",
           "- *This led to tensions because...*",
           "- *This increased fear because...*",
           "- *As a result...*",
@@ -156,6 +157,7 @@ export default function Home() {
           "---",
           "Go ahead and try writing your explanation below. I'll give feedback after!"
         ].join("\n"));
+        
         setEssayStep("explanation");
         setInput("");
         return;
