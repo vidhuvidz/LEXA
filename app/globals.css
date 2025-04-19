@@ -108,6 +108,16 @@ body {
   margin-bottom: 0.5em;
 }
 
+.success-banner {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #228B22; /* green for success */
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+
 
 /* Optional: emoji-style headers */
 .markdown-content h3:before {
