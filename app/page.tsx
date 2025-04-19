@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -29,14 +28,18 @@ export default function Home() {
   const [essayPoints, setEssayPoints] = useState<string[]>([]);
   const [selectedPoint, setSelectedPoint] = useState("");
   const [evidence, setEvidence] = useState<{ optionA: string; optionB: string } | null>(null);
-  const [messages, setMessages] = useState<Msg[]>([{
-    role: "assistant",
-    content: "👋 Hi there! Click the **Essay Help** button on the left to get started. I'll guide you through writing an awesome PEEL paragraph!",
-  }]);
+  const [messages, setMessages] = useState<Msg[]>([
+    {
+      role: "assistant",
+      content: "👋 Hi there! Click the **Essay Help** button on the left to get started. I'll guide you through writing an awesome PEEL paragraph!",
+    },
+  ]);
   const [showContinueAnyway, setShowContinueAnyway] = useState(false);
 
-  const pushUser = (text: string) => setMessages((m) => [...m, { role: "user", content: text }]);
-  const pushAssistant = (text: string) => setMessages((m) => [...m, { role: "assistant", content: text }]);
+  const pushUser = (text: string) =>
+    setMessages((m) => [...m, { role: "user", content: text }]);
+  const pushAssistant = (text: string) =>
+    setMessages((m) => [...m, { role: "assistant", content: text }]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,7 +77,9 @@ export default function Home() {
       console.log("🧪 generatePoints response:", data);
       alert("Points generated: " + JSON.stringify(data.points));
       setEssayPoints(data.points || []);
-      pushAssistant("✨ Great question! Here are some strong points to consider. Pick one you'd like to explore.");
+      pushAssistant(
+        "✨ Great question! Here are some strong points to consider. Pick one you'd like to explore."
+      );
       setEssayStep("point");
     } catch {
       alert("Failed to generate points.");
@@ -122,7 +127,10 @@ export default function Home() {
 
       <div className="flex h-[calc(100vh-100px)]">
         <div className="w-1/4 bg-gray-100 p-4 space-y-4 overflow-y-auto border-r">
-          <button onClick={() => setEssayStep("question")} className="flex items-center justify-center w-full bg-blue-100 hover:bg-blue-200 text-black py-2 px-4 rounded-md font-semibold">
+          <button
+            onClick={() => setEssayStep("question")}
+            className="flex items-center justify-center w-full bg-blue-100 hover:bg-blue-200 text-black py-2 px-4 rounded-md font-semibold"
+          >
             <BookOpen className="w-5 h-5 mr-2" /> Essay Help
           </button>
 
@@ -136,7 +144,9 @@ export default function Home() {
                     onClick={() => generateEvidence(pt)}
                     className="w-full text-left bg-white border rounded p-2 hover:bg-blue-100"
                   >
-                    <span dangerouslySetInnerHTML={{ __html: renderMarkdown(pt) }} />
+                    <span
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(pt) }}
+                    />
                   </button>
                 ))}
               </div>
@@ -146,24 +156,42 @@ export default function Home() {
           {essayStep === "evidence" && evidence && (
             <div className="mt-4 space-y-2">
               <p className="font-semibold mb-2">Choose Your Evidence:</p>
-              <button onClick={() => {
-                pushUser("Evidence selected: Option A (Weak)");
-                pushAssistant("🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?");
-                setShowContinueAnyway(true);
-              }} className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100">
-                Option A (Weak)</button>
-              <button onClick={() => {
-                pushUser("Evidence selected: Option B (Strong)");
-                pushAssistant("💪 Excellent choice! Now write an explanation linking this evidence back to your point.");
-                setEssayStep("explanation");
-              }} className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100">
-                Option B (Strong)</button>
-              {showContinueAnyway && (
-                <button onClick={() => {
-                  pushAssistant("📘 Alright, go ahead and explain how this evidence supports your point.");
+              <button
+                onClick={() => {
+                  pushUser("Evidence selected: Option A (Weak)");
+                  pushAssistant(
+                    "🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?"
+                  );
+                  setShowContinueAnyway(true);
+                }}
+                className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
+              >
+                Option A (Weak)
+              </button>
+              <button
+                onClick={() => {
+                  pushUser("Evidence selected: Option B (Strong)");
+                  pushAssistant(
+                    "💪 Excellent choice! Now write an explanation linking this evidence back to your point."
+                  );
                   setEssayStep("explanation");
-                }} className="w-full mt-2 bg-blue-500 text-white py-2 px-4 rounded">
-                  Continue with Option A</button>
+                }}
+                className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
+              >
+                Option B (Strong)
+              </button>
+              {showContinueAnyway && (
+                <button
+                  onClick={() => {
+                    pushAssistant(
+                      "📘 Alright, go ahead and explain how this evidence supports your point."
+                    );
+                    setEssayStep("explanation");
+                  }}
+                  className="w-full mt-2 bg-blue-500 text-white py-2 px-4 rounded"
+                >
+                  Continue with Option A
+                </button>
               )}
             </div>
           )}
@@ -173,39 +201,72 @@ export default function Home() {
           <div className="flex-1 p-6 overflow-y-auto">
             {essayStep === "question" && (
               <div className="mb-6">
-                <label className="block mb-2 font-semibold">Essay Question</label>
+                <label className="block mb-2 font-semibold">
+                  Essay Question
+                </label>
                 <textarea
                   rows={4}
                   value={essayQuestion}
                   onChange={(e) => setEssayQuestion(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === "Enter" &&
+                      !e.shiftKey &&
+                      essayQuestion.trim()
+                    ) {
+                      e.preventDefault();
+                      generatePoints();
+                    }
+                  }}
                   className="w-full border rounded p-2 text-sm mb-4"
                 />
                 <button
                   onClick={generatePoints}
                   disabled={!essayQuestion.trim() || loading}
                   className="bg-blue-500 text-white py-2 px-4 rounded-md disabled:opacity-50"
-                >Generate Points</button>
+                >
+                  Generate Points
+                </button>
               </div>
             )}
 
             {messages.map((m, i) => (
-              <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
+              <div
+                key={i}
+                className={`mb-4 ${
+                  m.role === "user" ? "text-right" : "text-left"
+                }`}
+              >
                 {m.role === "assistant" ? (
-                  <div className="bg-rose-100 border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]" dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}></div>
+                  <div
+                    className="bg-rose-100 border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
+                    dangerouslySetInnerHTML={{
+                      __html: renderMarkdown(m.content),
+                    }}
+                  ></div>
                 ) : (
                   <p className="bg-blue-100 inline-block px-4 py-2 rounded-md">
-                    <span className="font-semibold">YOU: </span>{m.content}
+                    <span className="font-semibold">YOU: </span>
+                    {m.content}
                   </p>
                 )}
               </div>
             ))}
-            {loading && <p className="italic text-sm text-gray-400 animate-pulse">Lexa is thinking...</p>}
+            {loading && (
+              <p className="italic text-sm text-gray-400 animate-pulse">
+                Lexa is thinking...
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-2 p-4 border-t bg-white">
             <input
               type="text"
-              placeholder={essayStep === "init" ? "Click 'Essay Help' to begin..." : "Type your question here..."}
+              placeholder={
+                essayStep === "init"
+                  ? "Click 'Essay Help' to begin..."
+                  : "Type your question here..."
+              }
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -214,9 +275,18 @@ export default function Home() {
             />
             <label className="cursor-pointer">
               <Paperclip className="text-gray-500 w-5 h-5" />
-              <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" />
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
             </label>
-            <button onClick={sendMessage} disabled={essayStep === "init"} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full">
+            <button
+              onClick={sendMessage}
+              disabled={essayStep === "init"}
+              className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full"
+            >
               <Send className="w-4 h-4" />
             </button>
           </div>
