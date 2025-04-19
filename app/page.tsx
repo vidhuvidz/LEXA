@@ -86,7 +86,7 @@ export default function Home() {
       });
       const data = await res.json();
       setEssayPoints(data.points || []);
-      pushAssistant("✨ Great question! Here are some strong points to consider. Pick one you'd like to explore.");
+      pushAssistant("## ✨ Great question! \nHere are some strong points to consider. Pick one you'd like to explore.");
       setEssayStep("point");
     } catch {
       alert("Failed to generate points.");
@@ -108,10 +108,10 @@ export default function Home() {
       const data = await res.json();
       setEvidence({ optionA: data.weak, optionB: data.strong });
       setShowContinueAnyway(false);
-      pushAssistant("💡 Here are two evidence options. Pick one to continue:");
-      pushAssistant(`🔸 **Option A (Weak):** ${data.weak}`);
-      pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
-      setEssayStep("evidence");
+      pushAssistant("## 💡 Here are two evidence options. Pick one to continue:");
+      pushAssistant(`## 🔸 Option A\n${data.weak}`);
+pushAssistant(`## 🔹 Option B\n${data.strong}`);
+setEssayStep("evidence");
     } catch {
       alert("Failed to generate evidence.");
     } finally {
@@ -138,7 +138,12 @@ export default function Home() {
           "",
           "Now let's explain how this evidence supports your point.",
           "",
-          `### 📘 Your Point\n${selectedPoint}`,
+          (() => {
+            const pointTitle = selectedPoint.match(/\*\*(.*?)\*\*/)?.[1] || selectedPoint;
+            const pointRest = selectedPoint.replace(/\*\*(.*?)\*\*/, "").trim();
+            return `### 📘 ${pointTitle}\n${pointRest}`;
+          })(),
+          
           "",
           `### 📌 Your Evidence\n${evidence?.optionB || evidence?.optionA}`,
           "",
