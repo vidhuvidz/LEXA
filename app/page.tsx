@@ -15,7 +15,7 @@ function renderMarkdown(md: string): string {
   return typeof result === "string" ? result : "";
 }
 
-const STEPS = ["init", "question", "point", "evidence", "explanation", "link", "done"] as const;
+const STEPS = ["init", "question", "point", "evidence", "explanation", "done"] as const;
 type EssayStep = typeof STEPS[number];
 
 type Msg = {
@@ -188,7 +188,7 @@ export default function Home() {
         const data = await res.json();
         pushAssistant(data.feedback);
         if (data.nextStep === "link") {
-          setEssayStep("link");
+          setEssayStep("done");
         }
       } catch {
         alert("Failed to evaluate explanation.");
@@ -202,7 +202,8 @@ export default function Home() {
     setInput("");
   };
 
-  const bottomInputDisabled = !["explanation", "link", "done"].includes(essayStep);
+  const bottomInputDisabled = !["explanation", "done"].includes(essayStep);
+
 
   return (
     <main className="min-h-screen font-[Inter] bg-gray-50">
@@ -341,6 +342,40 @@ export default function Home() {
               </div>
             ))}
             <div ref={bottomRef} />
+            {essayStep === "done" && (
+  <div className="mt-6 flex gap-4 justify-center fade-in">
+    <button
+      onClick={() => {
+        setEssayStep("point"); // Reuse another point
+        pushAssistant("📝 Let's write another paragraph. Pick a new point to explore.");
+      }}
+      className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md"
+    >
+      🔁 Write Another Paragraph
+    </button>
+
+    <button
+      onClick={() => {
+        setEssayStep("init");
+        setEssayQuestion("");
+        setEssayPoints([]);
+        setSelectedPoint("");
+        setEvidence(null);
+        setMessages([
+          {
+            role: "assistant",
+            content:
+              "👋 Hi again! Click **Essay Help** to start a new question. I'm ready when you are!",
+          },
+        ]);
+      }}
+      className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
+    >
+      🆕 Start a New Question
+    </button>
+  </div>
+)}
+
             {loading && (
               <p className="italic text-sm text-gray-400 animate-pulse">Lexa is thinking...</p>
             )}
