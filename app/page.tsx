@@ -75,7 +75,6 @@ export default function Home() {
       });
       const data = await res.json();
       console.log("🧪 generatePoints response:", data);
-      alert("Points generated: " + JSON.stringify(data.points));
       setEssayPoints(data.points || []);
       pushAssistant(
         "✨ Great question! Here are some strong points to consider. Pick one you'd like to explore."
