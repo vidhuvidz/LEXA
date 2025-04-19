@@ -1,18 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./app/**/*.{js,ts,jsx,tsx}", // Scans your Next.js app folder
-    // Add "./components/**/*.{js,ts,jsx,tsx}" if you use a components folder
+    "./app/**/*.{js,ts,jsx,tsx}",
+    // Add more folders here if needed
   ],
   theme: {
-    extend: {},
-  },
-  plugins: [],
-  plugins: [require('@tailwindcss/typography')],
-  theme: {
-    fontFamily: {
-      sans: ['Inter', 'sans-serif'],
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      },
     },
-  }
-  
+  },
+  plugins: [require('@tailwindcss/typography')],
 };
+
