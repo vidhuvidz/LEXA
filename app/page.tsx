@@ -143,7 +143,43 @@ export default function Home() {
         setInput("");
         return;
       }
+      
     }
+        // Step 3: explanation step
+        if (essayStep === "explanation") {
+          const userExplanation = input.trim();
+          pushUser(userExplanation);
+          setInput("");
+          setLoading(true);
+    
+          try {
+            const res = await fetch("/api/generate-explanation", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                explanation: userExplanation,
+                point: selectedPoint,
+                evidence: evidence?.optionB || evidence?.optionA,
+                file_ids: fileIds,
+              }),
+            });
+    
+            const data = await res.json();
+            console.log("🧠 Explanation feedback:", data);
+            pushAssistant(data.feedback);
+    
+            // move to link step if explanation is strong
+            if (data.nextStep === "link") {
+              setEssayStep("link");
+            }
+          } catch {
+            alert("Failed to evaluate explanation.");
+          } finally {
+            setLoading(false);
+          }
+          return;
+        }
+    
 
     // Default chat fallback
     pushUser(input);
@@ -209,8 +245,26 @@ export default function Home() {
                 onClick={() => {
                   pushUser("Evidence selected: Option B (Strong)");
                   pushAssistant(
-                    "💪 Excellent choice! Now write an explanation linking this evidence back to your point."
+                    `💪 Excellent choice!
+                  
+                  Now let's explain how this evidence supports your point.
+                  
+                  🧱 **Your Point:** ${selectedPoint}  
+                  📌 **Your Evidence:** ${evidence?.optionB}
+                  
+                  Think about:
+                  - What effect did this have?
+                  - Why does this matter?
+                  - How did this contribute to tensions?
+                  
+                  You can start with:
+                  - *This led to tensions because...*
+                  - *This increased fear because...*
+                  - *As a result...*
+                  
+                  Go ahead and try writing your explanation below. I'll give feedback after!`
                   );
+                  
                   setEssayStep("explanation");
                 }}
                 className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
