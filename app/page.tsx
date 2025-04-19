@@ -23,7 +23,10 @@ export default function Home() {
   const [essayPoints, setEssayPoints] = useState<string[]>([]);
   const [selectedPoint, setSelectedPoint] = useState("");
   const [evidence, setEvidence] = useState<{ optionA: string; optionB: string } | null>(null);
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<Msg[]>([{
+    role: "assistant",
+    content: "👋 Hi there! Click the **Essay Help** button on the left to get started. I'll guide you through writing an awesome PEEL paragraph!",
+  }]);
 
   const pushUser = (text: string) => setMessages((m) => [...m, { role: "user", content: text }]);
   const pushAssistant = (text: string) => setMessages((m) => [...m, { role: "assistant", content: text }]);
@@ -62,7 +65,7 @@ export default function Home() {
       });
       const data = await res.json();
       setEssayPoints(data.points || []);
-      pushAssistant("Here are some strong points that could answer your question. Pick one you'd like to explore!");
+      pushAssistant("✨ Great question! Here are some strong points to consider. Pick one you'd like to explore.");
       setEssayStep("point");
     } catch {
       alert("Failed to generate points.");
@@ -79,18 +82,11 @@ export default function Home() {
       const res = await fetch("/api/generate-evidence", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          point,                       // ✅ match backend
-          question: essayQuestion,     // ✅ match backend
-          file_ids: fileIds,
-        }),
+        body: JSON.stringify({ point, question: essayQuestion, file_ids: fileIds }),
       });
       const data = await res.json();
-      
-setEvidence({ optionA: data.weak, optionB: data.strong });
-pushAssistant(`🔸 **Option A (Weak):** ${data.weak}`);
-pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
-
+      setEvidence({ optionA: data.weak, optionB: data.strong });
+      pushAssistant("💡 Here are two evidence options. Pick one to continue:");
       setEssayStep("evidence");
     } catch {
       alert("Failed to generate evidence.");
@@ -98,10 +94,9 @@ pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
       setLoading(false);
     }
   };
-  
 
   const sendMessage = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || essayStep === "init") return;
     pushUser(input);
     setInput("");
   };
@@ -152,6 +147,28 @@ pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
               </div>
             </div>
           )}
+
+          {essayStep === "evidence" && evidence && (
+            <div className="mt-4 space-y-2">
+              <p className="font-semibold mb-2">Choose Your Evidence:</p>
+              <button
+                onClick={() => {
+                  pushUser("Evidence selected: Option A (Weak)");
+                  pushAssistant("📖 Great! Now explain how this evidence supports your point.");
+                  setEssayStep("explanation");
+                }}
+                className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
+              >Option A (Weak)</button>
+              <button
+                onClick={() => {
+                  pushUser("Evidence selected: Option B (Strong)");
+                  pushAssistant("💪 Excellent choice! Now write an explanation linking this evidence back to your point.");
+                  setEssayStep("explanation");
+                }}
+                className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
+              >Option B (Strong)</button>
+            </div>
+          )}
         </div>
 
         <div className="w-3/4 flex flex-col justify-between">
@@ -186,17 +203,22 @@ pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
           <div className="flex items-center gap-2 p-4 border-t bg-white">
             <input
               type="text"
-              placeholder="Type your question here..."
+              placeholder={essayStep === "init" ? "Click 'Essay Help' to begin..." : "Type your question here..."}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               className="flex-1 px-4 py-4 border rounded-full text-sm"
+              disabled={essayStep === "init"}
             />
             <label className="cursor-pointer">
               <Paperclip className="text-gray-500 w-5 h-5" />
               <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" />
             </label>
-            <button onClick={sendMessage} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full">
+            <button
+              onClick={sendMessage}
+              disabled={essayStep === "init"}
+              className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full"
+            >
               <Send className="w-4 h-4" />
             </button>
           </div>
