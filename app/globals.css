@@ -71,4 +71,43 @@ body {
   animation: fadeInUp 0.4s ease-out;
 }
 
+/* --- Lexa Markdown Feedback Styling --- */
+.markdown-content {
+  @apply prose prose-sm text-sm leading-snug text-gray-800;
+  max-width: 100%;
+  line-height: 1.4;
+}
+
+.markdown-content h3 {
+  @apply font-semibold text-[15px] mt-4 mb-2 text-blue-900;
+}
+
+.markdown-content p {
+  @apply my-2 text-gray-800;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  @apply ml-5 my-2 list-disc;
+}
+
+.markdown-content li {
+  @apply mb-1;
+}
+
+.markdown-content blockquote {
+  @apply border-l-4 border-rose-300 pl-4 italic text-gray-700 bg-rose-50 rounded;
+  margin: 1em 0;
+  padding: 0.5em;
+}
+
+/* Optional: emoji-style headers */
+.markdown-content h3:before {
+  content: "📌 ";
+}
+
+/* Code styling (if ever used) */
+.markdown-content code {
+  @apply bg-gray-100 px-1 py-[2px] rounded font-mono text-xs text-red-600;
+}
 

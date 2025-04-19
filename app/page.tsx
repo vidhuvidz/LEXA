@@ -14,9 +14,10 @@ type Msg = {
 };
 
 function renderMarkdown(md: string): string {
-  const result = marked.parseInline(md);
+  const result = marked.parse(md); // full markdown parser
   return typeof result === "string" ? result : "";
 }
+
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -320,7 +321,7 @@ export default function Home() {
               <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
                 {m.role === "assistant" ? (
                   <div
-                    className="bg-[#FFF5F6] border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
+                  className="markdown-content bg-[#FFF5F6] border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
                     dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
                   />
                 ) : (
