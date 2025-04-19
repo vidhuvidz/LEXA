@@ -86,9 +86,11 @@ export default function Home() {
         }),
       });
       const data = await res.json();
-      setEvidence(data.evidence);
-      pushAssistant(`🔸 **Option A (Weak):** ${data.evidence.optionA}`);
-      pushAssistant(`🔹 **Option B (Strong):** ${data.evidence.optionB}`);
+      
+setEvidence({ optionA: data.weak, optionB: data.strong });
+pushAssistant(`🔸 **Option A (Weak):** ${data.weak}`);
+pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
+
       setEssayStep("evidence");
     } catch {
       alert("Failed to generate evidence.");
