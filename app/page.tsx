@@ -196,6 +196,7 @@ setEssayStep("evidence");
             point: selectedPoint,
             evidence: evidence?.optionB || evidence?.optionA,
             file_ids: fileIds,
+            question: essayQuestion,
           }),
         });
         const data = await res.json();
