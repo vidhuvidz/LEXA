@@ -87,6 +87,8 @@ export default function Home() {
       const data = await res.json();
       setEvidence({ optionA: data.weak, optionB: data.strong });
       pushAssistant("💡 Here are two evidence options. Pick one to continue:");
+      pushAssistant(`🔸 **Option A (Weak):** ${data.weak}`);
+pushAssistant(`🔹 **Option B (Strong):** ${data.strong}`);
       setEssayStep("evidence");
     } catch {
       alert("Failed to generate evidence.");
