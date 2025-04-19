@@ -244,7 +244,7 @@ export default function Home() {
                     }}
                   ></div>
                 ) : (
-                  <p className="bg-blue-100 inline-block px-4 py-2 rounded-md">
+                  <p className="bg-[#4682B4] text-white font-bold inline-block px-4 py-2 rounded-md">
                     <span className="font-semibold">YOU: </span>
                     {m.content}
                   </p>
