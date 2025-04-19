@@ -79,7 +79,11 @@ export default function Home() {
       const res = await fetch("/api/generate-evidence", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ essayQuestion, selectedPoint: point, file_ids: fileIds }),
+        body: JSON.stringify({
+          point,                       // ✅ match backend
+          question: essayQuestion,     // ✅ match backend
+          file_ids: fileIds,
+        }),
       });
       const data = await res.json();
       setEvidence(data.evidence);
@@ -92,6 +96,7 @@ export default function Home() {
       setLoading(false);
     }
   };
+  
 
   const sendMessage = () => {
     if (!input.trim()) return;
