@@ -138,8 +138,32 @@ export default function Home() {
       if (input.includes(evidence.optionB)) {
         pushUser(input);
         pushAssistant(
-          "💪 Excellent choice! Now write an explanation linking this evidence back to your point."
+          `💪 Excellent choice!
+        
+        Now let's explain how this evidence supports your point.
+        
+        📘 **Your Point:** ${selectedPoint}
+        📌 **Your Evidence:** ${evidence?.optionB || evidence?.optionA}
+        
+        ---
+        
+        **Think about:**
+        - What effect did this have?
+        - Why does this matter?
+        - How did this contribute to tensions?
+        
+        ---
+        
+        **You can start with:**
+        - *This led to tensions because...*
+        - *This increased fear because...*
+        - *As a result...*
+        
+        ---
+        
+        Go ahead and try writing your explanation below. I'll give feedback after!`
         );
+        
         setEssayStep("explanation");
         setInput("");
         return;
