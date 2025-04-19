@@ -65,7 +65,7 @@ export default function Home() {
   };
 
   const generatePoints = async () => {
-    pushUser(`Essay question: ${essayQuestion}`);
+    pushUser(`${essayQuestion}`);
     setLoading(true);
     try {
       const res = await fetch("/api/generate-points", {
@@ -88,7 +88,7 @@ export default function Home() {
   };
 
   const generateEvidence = async (point: string) => {
-    pushUser(`Point selected: ${point}`);
+    pushUser(`${point}`);
     setSelectedPoint(point);
     setLoading(true);
     try {
@@ -238,7 +238,7 @@ export default function Home() {
               >
                 {m.role === "assistant" ? (
                   <div
-                    className="bg-rose-100 border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
+                    className="bg-[#FFF5F6] border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
                     dangerouslySetInnerHTML={{
                       __html: renderMarkdown(m.content),
                     }}
