@@ -66,7 +66,7 @@ export default function Home() {
   };
 
   const generatePoints = async () => {
-    pushUser(`Essay question: ${essayQuestion}`);
+    pushUser(`${essayQuestion}`);
     setLoading(true);
     try {
       const res = await fetch("/api/generate-points", {
@@ -88,7 +88,7 @@ export default function Home() {
   };
 
   const generateEvidence = async (point: string) => {
-    pushUser(`Point selected: ${point}`);
+    pushUser(`${point}`);
     setSelectedPoint(point);
     setLoading(true);
     try {
@@ -112,9 +112,9 @@ export default function Home() {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || essayStep === "init") return;
+    if (!input.trim()) return;
 
-    // Step 1: question
+    // Step 1: question entry
     if (essayStep === "question") {
       setEssayQuestion(input);
       pushUser(input);
@@ -123,9 +123,8 @@ export default function Home() {
       return;
     }
 
-    // Step 2: evidence selection via bottom input
+    // Step 2: evidence via bottom input (if we ever allow it)
     if (essayStep === "evidence" && evidence) {
-      // if user pasted or typed Option B text
       if (input.includes(evidence.optionB)) {
         pushUser(input);
         pushAssistant(
@@ -135,7 +134,6 @@ export default function Home() {
         setInput("");
         return;
       }
-      // if user pasted or typed Option A text
       if (input.includes(evidence.optionA)) {
         pushUser(input);
         pushAssistant(
@@ -147,10 +145,13 @@ export default function Home() {
       }
     }
 
-    // otherwise, normal chat
+    // Default chat fallback
     pushUser(input);
     setInput("");
   };
+
+  // Only enable bottom input from "explanation" step onward
+  const bottomInputDisabled = !["explanation", "link", "done"].includes(essayStep);
 
   return (
     <main className="min-h-screen font-[Inter] bg-gray-50">
@@ -287,33 +288,31 @@ export default function Home() {
             <input
               type="text"
               placeholder={
-                essayStep === "init"
-                  ? "Click 'Essay Help' to begin..."
-                  : essayStep === "question"
-                  ? "Type your question here and press Send..."
-                  : essayStep === "evidence"
-                  ? "Paste Option A or B here to select..."
-                  : "Type your response here..."
+                bottomInputDisabled
+                  ? "Available after choosing evidence..."
+                  : essayStep === "explanation"
+                  ? "Type your explanation here..."
+                  : "Type your linking sentence here..."
               }
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => {
-                if (e.key === "Enter") {
+                if (e.key === "Enter" && !bottomInputDisabled) {
                   e.preventDefault();
                   handleSend();
                 }
               }}
-              className="flex-1 px-4 py-4 border rounded-full text-sm"
-              disabled={essayStep === "init"}
+              className="flex-1 px-4 py-4 border rounded-full text-sm disabled:opacity-50"
+              disabled={bottomInputDisabled}
             />
-            <label className="cursor-pointer">
+            <label className="cursor-pointer opacity-50">
               <Paperclip className="text-gray-500 w-5 h-5" />
               <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" />
             </label>
             <button
               onClick={handleSend}
-              disabled={essayStep === "init"}
-              className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full"
+              disabled={bottomInputDisabled}
+              className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
             </button>
