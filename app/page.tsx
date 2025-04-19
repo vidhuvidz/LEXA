@@ -14,6 +14,11 @@ type Msg = {
   content: string;
 };
 
+function renderMarkdown(md: string): string {
+  const result = marked.parseInline(md);
+  return typeof result === "string" ? result : "";
+}
+
 export default function Home() {
   const [input, setInput] = useState("");
   const [fileIds, setFileIds] = useState<string[]>([]);
@@ -31,7 +36,7 @@ export default function Home() {
   const [showContinueAnyway, setShowContinueAnyway] = useState(false);
 
   const pushUser = (text: string) => setMessages((m) => [...m, { role: "user", content: text }]);
-  const pushAssistant = (text: string) => setMessages((m) => [...m, { role: "assistant", content: text }] );
+  const pushAssistant = (text: string) => setMessages((m) => [...m, { role: "assistant", content: text }]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,6 +71,8 @@ export default function Home() {
         body: JSON.stringify({ question: essayQuestion, file_ids: fileIds }),
       });
       const data = await res.json();
+      console.log("🧪 generatePoints response:", data);
+      alert("Points generated: " + JSON.stringify(data.points));
       setEssayPoints(data.points || []);
       pushAssistant("✨ Great question! Here are some strong points to consider. Pick one you'd like to explore.");
       setEssayStep("point");
@@ -119,6 +126,23 @@ export default function Home() {
             <BookOpen className="w-5 h-5 mr-2" /> Essay Help
           </button>
 
+          {essayStep === "point" && essayPoints.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold mb-2">Select a Point:</p>
+              <div className="space-y-2">
+                {essayPoints.map((pt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => generateEvidence(pt)}
+                    className="w-full text-left bg-white border rounded p-2 hover:bg-blue-100"
+                  >
+                    <span dangerouslySetInnerHTML={{ __html: renderMarkdown(pt) }} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {essayStep === "evidence" && evidence && (
             <div className="mt-4 space-y-2">
               <p className="font-semibold mb-2">Choose Your Evidence:</p>
@@ -167,10 +191,7 @@ export default function Home() {
             {messages.map((m, i) => (
               <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
                 {m.role === "assistant" ? (
-                  <div
-                    className="bg-rose-100 border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
-                    dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
-                  ></div>
+                  <div className="bg-rose-100 border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]" dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}></div>
                 ) : (
                   <p className="bg-blue-100 inline-block px-4 py-2 rounded-md">
                     <span className="font-semibold">YOU: </span>{m.content}
