@@ -62,7 +62,7 @@ export default function Home() {
       });
       const data = await res.json();
       setEssayPoints(data.points || []);
-      data.points?.forEach((p: string, i: number) => pushAssistant(`${i + 1}. **${p}**`));
+      pushAssistant("Here are some strong points that could answer your question. Pick one you'd like to explore!");
       setEssayStep("point");
     } catch {
       alert("Failed to generate points.");
@@ -138,8 +138,9 @@ export default function Home() {
                   <button
                     key={idx}
                     onClick={() => generateEvidence(pt)}
-                    className="w-full text-left bg-white border rounded p-2 hover:bg-blue-100 text-sm"
-                  >{pt}</button>
+                    className="w-full text-left bg-white border rounded p-3 hover:bg-blue-100 text-sm leading-snug whitespace-normal"
+                    dangerouslySetInnerHTML={{ __html: pt }}
+                  />
                 ))}
               </div>
             </div>
@@ -168,8 +169,7 @@ export default function Home() {
             {messages.map((m, i) => (
               <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
                 <p className={m.role === "assistant" ? "bg-gray-100 inline-block px-4 py-2 rounded-md" : "bg-blue-100 inline-block px-4 py-2 rounded-md"}>
-                  <span className="font-semibold">{m.role === "assistant" ? "LEXA: " : "YOU: "}</span>
-                  {m.content}
+                  <span className="font-semibold">{m.role === "assistant" ? "LEXA: " : "YOU: "}</span> {m.content}
                 </p>
               </div>
             ))}
