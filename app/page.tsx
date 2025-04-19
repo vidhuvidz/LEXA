@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { Paperclip, Send, BookOpen, X } from "lucide-react";
+import { marked } from "marked";
 import "./globals.css";
 
 const STEPS = ["init", "question", "point", "evidence", "explanation", "link", "done"] as const;
@@ -30,7 +31,7 @@ export default function Home() {
   const [showContinueAnyway, setShowContinueAnyway] = useState(false);
 
   const pushUser = (text: string) => setMessages((m) => [...m, { role: "user", content: text }]);
-  const pushAssistant = (text: string) => setMessages((m) => [...m, { role: "assistant", content: text }]);
+  const pushAssistant = (text: string) => setMessages((m) => [...m, { role: "assistant", content: text }] );
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,67 +119,27 @@ export default function Home() {
             <BookOpen className="w-5 h-5 mr-2" /> Essay Help
           </button>
 
-          {essayStep === "question" && (
-            <div className="mt-4 space-y-2">
-              <label className="font-semibold block">Upload Notes (PDF)</label>
-              <input type="file" accept=".pdf" onChange={handleFileUpload} />
-              <div className="space-y-1">
-                {fileNames.map((name, idx) => (
-                  <div key={idx} className="text-xs text-gray-600 flex items-center gap-2">
-                    📄 {name}
-                    <X className="w-3 h-3 cursor-pointer" onClick={() => {
-                      setFileIds(fileIds.filter((_, i) => i !== idx));
-                      setFileNames(fileNames.filter((_, i) => i !== idx));
-                    }} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {essayStep === "point" && (
-            <div className="mt-4">
-              <p className="font-semibold mb-2">Select a Point:</p>
-              <div className="space-y-2">
-                {essayPoints.map((pt, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => generateEvidence(pt)}
-                    className="w-full text-left bg-white border rounded p-3 hover:bg-blue-100 text-sm leading-snug whitespace-normal"
-                    dangerouslySetInnerHTML={{ __html: pt }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
           {essayStep === "evidence" && evidence && (
             <div className="mt-4 space-y-2">
               <p className="font-semibold mb-2">Choose Your Evidence:</p>
-              <button
-                onClick={() => {
-                  pushUser("Evidence selected: Option A (Weak)");
-                  pushAssistant("🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?");
-                  setShowContinueAnyway(true);
-                }}
-                className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
-              >Option A (Weak)</button>
-              <button
-                onClick={() => {
-                  pushUser("Evidence selected: Option B (Strong)");
-                  pushAssistant("💪 Excellent choice! Now write an explanation linking this evidence back to your point.");
-                  setEssayStep("explanation");
-                }}
-                className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
-              >Option B (Strong)</button>
+              <button onClick={() => {
+                pushUser("Evidence selected: Option A (Weak)");
+                pushAssistant("🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?");
+                setShowContinueAnyway(true);
+              }} className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100">
+                Option A (Weak)</button>
+              <button onClick={() => {
+                pushUser("Evidence selected: Option B (Strong)");
+                pushAssistant("💪 Excellent choice! Now write an explanation linking this evidence back to your point.");
+                setEssayStep("explanation");
+              }} className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100">
+                Option B (Strong)</button>
               {showContinueAnyway && (
-                <button
-                  onClick={() => {
-                    pushAssistant("📘 Alright, go ahead and explain how this evidence supports your point.");
-                    setEssayStep("explanation");
-                  }}
-                  className="w-full mt-2 bg-blue-500 text-white py-2 px-4 rounded"
-                >Continue with Option A</button>
+                <button onClick={() => {
+                  pushAssistant("📘 Alright, go ahead and explain how this evidence supports your point.");
+                  setEssayStep("explanation");
+                }} className="w-full mt-2 bg-blue-500 text-white py-2 px-4 rounded">
+                  Continue with Option A</button>
               )}
             </div>
           )}
@@ -205,9 +166,16 @@ export default function Home() {
 
             {messages.map((m, i) => (
               <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
-                <p className={m.role === "assistant" ? "bg-gray-100 inline-block px-4 py-2 rounded-md" : "bg-blue-100 inline-block px-4 py-2 rounded-md"}>
-                  <span className="font-semibold">{m.role === "assistant" ? "LEXA: " : "YOU: "}</span> {m.content}
-                </p>
+                {m.role === "assistant" ? (
+                  <div
+                    className="bg-rose-100 border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
+                    dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }}
+                  ></div>
+                ) : (
+                  <p className="bg-blue-100 inline-block px-4 py-2 rounded-md">
+                    <span className="font-semibold">YOU: </span>{m.content}
+                  </p>
+                )}
               </div>
             ))}
             {loading && <p className="italic text-sm text-gray-400 animate-pulse">Lexa is thinking...</p>}
@@ -227,11 +195,7 @@ export default function Home() {
               <Paperclip className="text-gray-500 w-5 h-5" />
               <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" />
             </label>
-            <button
-              onClick={sendMessage}
-              disabled={essayStep === "init"}
-              className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full"
-            >
+            <button onClick={sendMessage} disabled={essayStep === "init"} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full">
               <Send className="w-4 h-4" />
             </button>
           </div>
