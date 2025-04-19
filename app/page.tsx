@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Paperclip, Send, BookOpen } from "lucide-react";
 import { marked } from "marked";
+import "./globals.css";
+
 marked.setOptions({
-  breaks: true, // Enables soft line breaks (newline = <br>)
-  gfm: true,    // Enables GitHub-flavored markdown (headings, bullets, etc.)
+  breaks: true,
+  gfm: true,
 });
 
-import "./globals.css";
+function renderMarkdown(md: string): string {
+  const result = marked.parse(md);
+  return typeof result === "string" ? result : "";
+}
 
 const STEPS = ["init", "question", "point", "evidence", "explanation", "link", "done"] as const;
 type EssayStep = typeof STEPS[number];
@@ -17,16 +22,6 @@ type Msg = {
   role: "user" | "assistant";
   content: string;
 };
-marked.setOptions({
-  breaks: true, // Allow single line breaks to become <br>
-  gfm: true,    // Enable GitHub-style markdown (headings, bullets, blockquotes)
-});
-
-function renderMarkdown(md: string): string {
-  const result = marked.parse(md); // full markdown parser
-  return typeof result === "string" ? result : "";
-}
-
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -46,6 +41,11 @@ export default function Home() {
     },
   ]);
   const [showContinueAnyway, setShowContinueAnyway] = useState(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const pushUser = (text: string) =>
     setMessages(m => [...m, { role: "user", content: text }]);
@@ -86,9 +86,7 @@ export default function Home() {
       });
       const data = await res.json();
       setEssayPoints(data.points || []);
-      pushAssistant(
-        "✨ Great question! Here are some strong points to consider. Pick one you'd like to explore."
-      );
+      pushAssistant("✨ Great question! Here are some strong points to consider. Pick one you'd like to explore.");
       setEssayStep("point");
     } catch {
       alert("Failed to generate points.");
@@ -124,7 +122,6 @@ export default function Home() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // Step 1: question entry
     if (essayStep === "question") {
       setEssayQuestion(input);
       pushUser(input);
@@ -133,94 +130,78 @@ export default function Home() {
       return;
     }
 
-    // Step 2: evidence via bottom input (if we ever allow it)
     if (essayStep === "evidence" && evidence) {
       if (input.includes(evidence.optionB)) {
         pushUser(input);
-        pushAssistant(
-          `💪 Excellent choice!
-        
-        Now let's explain how this evidence supports your point.
-        
-        📘 **Your Point:** ${selectedPoint}
-        📌 **Your Evidence:** ${evidence?.optionB || evidence?.optionA}
-        
-        ---
-        
-        **Think about:**
-        - What effect did this have?
-        - Why does this matter?
-        - How did this contribute to tensions?
-        
-        ---
-        
-        **You can start with:**
-        - *This led to tensions because...*
-        - *This increased fear because...*
-        - *As a result...*
-        
-        ---
-        
-        Go ahead and try writing your explanation below. I'll give feedback after!`
-        );
-        
+        pushAssistant([
+          "💪 Excellent choice!",
+          "",
+          "Now let's explain how this evidence supports your point.",
+          "",
+          `📘 **Your Point:** ${selectedPoint}`,
+          `📌 **Your Evidence:** ${evidence?.optionB || evidence?.optionA}`,
+          "",
+          "---",
+          "**Think about:**",
+          "- What effect did this have?",
+          "- Why does this matter?",
+          "- How did this contribute to tensions?",
+          "",
+          "---",
+          "**You can start with:**",
+          "- *This led to tensions because...*",
+          "- *This increased fear because...*",
+          "- *As a result...*",
+          "",
+          "---",
+          "Go ahead and try writing your explanation below. I'll give feedback after!"
+        ].join("\n"));
         setEssayStep("explanation");
         setInput("");
         return;
       }
       if (input.includes(evidence.optionA)) {
         pushUser(input);
-        pushAssistant(
-          "🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?"
-        );
+        pushAssistant("🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?");
         setShowContinueAnyway(true);
         setInput("");
         return;
       }
-      
     }
-        // Step 3: explanation step
-        if (essayStep === "explanation") {
-          const userExplanation = input.trim();
-          pushUser(userExplanation);
-          setInput("");
-          setLoading(true);
-    
-          try {
-            const res = await fetch("/api/generate-explanation", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                explanation: userExplanation,
-                point: selectedPoint,
-                evidence: evidence?.optionB || evidence?.optionA,
-                file_ids: fileIds,
-              }),
-            });
-    
-            const data = await res.json();
-            console.log("🧠 Explanation feedback:", data);
-            pushAssistant(data.feedback);
-    
-            // move to link step if explanation is strong
-            if (data.nextStep === "link") {
-              setEssayStep("link");
-            }
-          } catch {
-            alert("Failed to evaluate explanation.");
-          } finally {
-            setLoading(false);
-          }
-          return;
-        }
-    
 
-    // Default chat fallback
+    if (essayStep === "explanation") {
+      const userExplanation = input.trim();
+      pushUser(userExplanation);
+      setInput("");
+      setLoading(true);
+      try {
+        const res = await fetch("/api/generate-explanation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            explanation: userExplanation,
+            point: selectedPoint,
+            evidence: evidence?.optionB || evidence?.optionA,
+            file_ids: fileIds,
+          }),
+        });
+        const data = await res.json();
+        pushAssistant(data.feedback);
+        if (data.nextStep === "link") {
+          setEssayStep("link");
+        }
+      } catch {
+        alert("Failed to evaluate explanation.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     pushUser(input);
     setInput("");
   };
 
-  // Only enable bottom input from "explanation" step onward
   const bottomInputDisabled = !["explanation", "link", "done"].includes(essayStep);
 
   return (
@@ -231,7 +212,6 @@ export default function Home() {
       </header>
 
       <div className="flex h-[calc(100vh-100px)]">
-        {/* Left panel */}
         <div className="w-1/4 bg-gray-100 p-4 space-y-4 overflow-y-auto border-r">
           <button
             onClick={() => setEssayStep("question")}
@@ -251,9 +231,7 @@ export default function Home() {
                     onClick={() => generateEvidence(pt)}
                     className="w-full text-left bg-white border rounded p-2 hover:bg-blue-100"
                   >
-                    <span
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(pt) }}
-                    />
+                    <span dangerouslySetInnerHTML={{ __html: renderMarkdown(pt) }} />
                   </button>
                 ))}
               </div>
@@ -266,9 +244,7 @@ export default function Home() {
               <button
                 onClick={() => {
                   pushUser("Evidence selected: Option A (Weak)");
-                  pushAssistant(
-                    "🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?"
-                  );
+                  pushAssistant("🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?");
                   setShowContinueAnyway(true);
                 }}
                 className="w-full text-left bg-white border rounded p-2 hover:bg-gray-100"
@@ -311,9 +287,7 @@ export default function Home() {
               {showContinueAnyway && (
                 <button
                   onClick={() => {
-                    pushAssistant(
-                      "📘 Alright, go ahead and explain how this evidence supports your point."
-                    );
+                    pushAssistant("📘 Alright, go ahead and explain how this evidence supports your point.");
                     setEssayStep("explanation");
                   }}
                   className="w-full mt-2 bg-blue-500 text-white py-2 px-4 rounded"
@@ -325,7 +299,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* Right panel */}
         <div className="w-3/4 flex flex-col justify-between">
           <div className="flex-1 p-6 overflow-y-auto">
             {essayStep === "question" && (
@@ -357,24 +330,22 @@ export default function Home() {
               <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
                 {m.role === "assistant" ? (
                   <div
-                  className="markdown-content bg-[#FFF5F6] border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
+                    className="markdown-content bg-[#FFF5F6] border border-black border-l-4 border-l-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
                     dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
                   />
                 ) : (
-                  <p className="bg-[#4682B4] text-white font-bold inline-block px-4 py-2 rounded-md">
-                    <span className="font-semibold"></span>
+                  <p className="bg-white text-black border border-black inline-block px-4 py-2 rounded-md max-w-[90%]">
                     {m.content}
                   </p>
                 )}
               </div>
             ))}
-
+            <div ref={bottomRef} />
             {loading && (
               <p className="italic text-sm text-gray-400 animate-pulse">Lexa is thinking...</p>
             )}
           </div>
 
-          {/* Bottom input bar */}
           <div className="flex items-center gap-2 p-4 border-t bg-white">
             <input
               type="text"

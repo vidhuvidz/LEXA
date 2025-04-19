@@ -101,6 +101,14 @@ body {
   padding: 0.5em;
 }
 
+.markdown-content h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.75em;
+  margin-bottom: 0.5em;
+}
+
+
 /* Optional: emoji-style headers */
 .markdown-content h3:before {
   content: "📌 ";
