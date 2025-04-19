@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Paperclip, Send, BookOpen, X } from "lucide-react";
+import { Paperclip, Send, BookOpen } from "lucide-react";
 import { marked } from "marked";
 import "./globals.css";
 
@@ -31,15 +31,16 @@ export default function Home() {
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
-      content: "👋 Hi there! Click the **Essay Help** button on the left to get started. I'll guide you through writing an awesome PEEL paragraph!",
+      content:
+        "👋 Hi there! Click the **Essay Help** button on the left to get started. I'll guide you through writing an awesome PEEL paragraph!",
     },
   ]);
   const [showContinueAnyway, setShowContinueAnyway] = useState(false);
 
   const pushUser = (text: string) =>
-    setMessages((m) => [...m, { role: "user", content: text }]);
+    setMessages(m => [...m, { role: "user", content: text }]);
   const pushAssistant = (text: string) =>
-    setMessages((m) => [...m, { role: "assistant", content: text }]);
+    setMessages(m => [...m, { role: "assistant", content: text }]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -53,8 +54,8 @@ export default function Home() {
       form.append("file", file);
       const res = await fetch("/api/openai-upload", { method: "POST", body: form });
       const json = await res.json();
-      setFileIds((prev) => [...prev, json.id]);
-      setFileNames((prev) => [...prev, file.name]);
+      setFileIds(prev => [...prev, json.id]);
+      setFileNames(prev => [...prev, file.name]);
       pushAssistant(`📎 PDF uploaded: ${file.name}`);
     } catch {
       alert("Upload failed.");
@@ -65,7 +66,7 @@ export default function Home() {
   };
 
   const generatePoints = async () => {
-    pushUser(`${essayQuestion}`);
+    pushUser(`Essay question: ${essayQuestion}`);
     setLoading(true);
     try {
       const res = await fetch("/api/generate-points", {
@@ -74,7 +75,6 @@ export default function Home() {
         body: JSON.stringify({ question: essayQuestion, file_ids: fileIds }),
       });
       const data = await res.json();
-      console.log("🧪 generatePoints response:", data);
       setEssayPoints(data.points || []);
       pushAssistant(
         "✨ Great question! Here are some strong points to consider. Pick one you'd like to explore."
@@ -88,7 +88,7 @@ export default function Home() {
   };
 
   const generateEvidence = async (point: string) => {
-    pushUser(`${point}`);
+    pushUser(`Point selected: ${point}`);
     setSelectedPoint(point);
     setLoading(true);
     try {
@@ -111,8 +111,43 @@ export default function Home() {
     }
   };
 
-  const sendMessage = () => {
+  const handleSend = async () => {
     if (!input.trim() || essayStep === "init") return;
+
+    // Step 1: question
+    if (essayStep === "question") {
+      setEssayQuestion(input);
+      pushUser(input);
+      setInput("");
+      await generatePoints();
+      return;
+    }
+
+    // Step 2: evidence selection via bottom input
+    if (essayStep === "evidence" && evidence) {
+      // if user pasted or typed Option B text
+      if (input.includes(evidence.optionB)) {
+        pushUser(input);
+        pushAssistant(
+          "💪 Excellent choice! Now write an explanation linking this evidence back to your point."
+        );
+        setEssayStep("explanation");
+        setInput("");
+        return;
+      }
+      // if user pasted or typed Option A text
+      if (input.includes(evidence.optionA)) {
+        pushUser(input);
+        pushAssistant(
+          "🤔 That’s a fair start, but Option B might help you write a stronger answer. Want to give it a try?"
+        );
+        setShowContinueAnyway(true);
+        setInput("");
+        return;
+      }
+    }
+
+    // otherwise, normal chat
     pushUser(input);
     setInput("");
   };
@@ -125,12 +160,14 @@ export default function Home() {
       </header>
 
       <div className="flex h-[calc(100vh-100px)]">
+        {/* Left panel */}
         <div className="w-1/4 bg-gray-100 p-4 space-y-4 overflow-y-auto border-r">
           <button
             onClick={() => setEssayStep("question")}
             className="flex items-center justify-center w-full bg-blue-100 hover:bg-blue-200 text-black py-2 px-4 rounded-md font-semibold"
           >
-            <BookOpen className="w-5 h-5 mr-2" /> Essay Help
+            <BookOpen className="w-5 h-5 mr-2" />
+            Essay Help
           </button>
 
           {essayStep === "point" && essayPoints.length > 0 && (
@@ -196,23 +233,18 @@ export default function Home() {
           )}
         </div>
 
+        {/* Right panel */}
         <div className="w-3/4 flex flex-col justify-between">
           <div className="flex-1 p-6 overflow-y-auto">
             {essayStep === "question" && (
               <div className="mb-6">
-                <label className="block mb-2 font-semibold">
-                  Essay Question
-                </label>
+                <label className="block mb-2 font-semibold">Essay Question</label>
                 <textarea
                   rows={4}
                   value={essayQuestion}
-                  onChange={(e) => setEssayQuestion(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (
-                      e.key === "Enter" &&
-                      !e.shiftKey &&
-                      essayQuestion.trim()
-                    ) {
+                  onChange={e => setEssayQuestion(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && !e.shiftKey && essayQuestion.trim()) {
                       e.preventDefault();
                       generatePoints();
                     }
@@ -230,19 +262,12 @@ export default function Home() {
             )}
 
             {messages.map((m, i) => (
-              <div
-                key={i}
-                className={`mb-4 ${
-                  m.role === "user" ? "text-right" : "text-left"
-                }`}
-              >
+              <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
                 {m.role === "assistant" ? (
                   <div
                     className="bg-[#FFF5F6] border-l-4 border-rose-400 inline-block px-4 py-2 rounded-md text-[15px]"
-                    dangerouslySetInnerHTML={{
-                      __html: renderMarkdown(m.content),
-                    }}
-                  ></div>
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
+                  />
                 ) : (
                   <p className="bg-[#4682B4] text-white font-bold inline-block px-4 py-2 rounded-md">
                     <span className="font-semibold">YOU: </span>
@@ -251,38 +276,42 @@ export default function Home() {
                 )}
               </div>
             ))}
+
             {loading && (
-              <p className="italic text-sm text-gray-400 animate-pulse">
-                Lexa is thinking...
-              </p>
+              <p className="italic text-sm text-gray-400 animate-pulse">Lexa is thinking...</p>
             )}
           </div>
 
+          {/* Bottom input bar */}
           <div className="flex items-center gap-2 p-4 border-t bg-white">
             <input
               type="text"
               placeholder={
                 essayStep === "init"
                   ? "Click 'Essay Help' to begin..."
-                  : "Type your question here..."
+                  : essayStep === "question"
+                  ? "Type your question here and press Send..."
+                  : essayStep === "evidence"
+                  ? "Paste Option A or B here to select..."
+                  : "Type your response here..."
               }
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               className="flex-1 px-4 py-4 border rounded-full text-sm"
               disabled={essayStep === "init"}
             />
             <label className="cursor-pointer">
               <Paperclip className="text-gray-500 w-5 h-5" />
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
+              <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" />
             </label>
             <button
-              onClick={sendMessage}
+              onClick={handleSend}
               disabled={essayStep === "init"}
               className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full"
             >
