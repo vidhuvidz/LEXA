@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { Paperclip, Send, BookOpen } from "lucide-react";
 import { marked } from "marked";
+marked.setOptions({
+  breaks: true, // Enables soft line breaks (newline = <br>)
+  gfm: true,    // Enables GitHub-flavored markdown (headings, bullets, etc.)
+});
+
 import "./globals.css";
 
 const STEPS = ["init", "question", "point", "evidence", "explanation", "link", "done"] as const;
@@ -12,6 +17,10 @@ type Msg = {
   role: "user" | "assistant";
   content: string;
 };
+marked.setOptions({
+  breaks: true, // Allow single line breaks to become <br>
+  gfm: true,    // Enable GitHub-style markdown (headings, bullets, blockquotes)
+});
 
 function renderMarkdown(md: string): string {
   const result = marked.parse(md); // full markdown parser
