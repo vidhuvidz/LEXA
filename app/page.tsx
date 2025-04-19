@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Paperclip, Loader2, Send, BookOpen, MessageSquareText, FileText, Star, X } from "lucide-react";
+import { Paperclip, Send, BookOpen, X } from "lucide-react";
 import "./globals.css";
 
 const STEPS = ["init", "question", "point", "evidence", "explanation", "link", "done"] as const;
@@ -108,28 +108,13 @@ export default function Home() {
 
       <div className="flex h-[calc(100vh-100px)]">
         <div className="w-1/4 bg-gray-100 p-4 space-y-4 overflow-y-auto border-r">
-          <button onClick={() => setEssayStep("question")} className="flex items-center gap-2 w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md">
-            <BookOpen className="w-5 h-5" /> Essay Help
-          </button>
-          <button className="flex items-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
-            <MessageSquareText className="w-5 h-5" /> SBQ Help
-          </button>
-          <button className="flex items-center gap-2 w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-md">
-            <FileText className="w-5 h-5" /> Topic Guide
-          </button>
-          <button className="flex items-center gap-2 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-md">
-            <Star className="w-5 h-5" /> Feedback
+          <button onClick={() => setEssayStep("question")} className="flex items-center justify-center w-full bg-blue-100 hover:bg-blue-200 text-black py-2 px-4 rounded-md font-semibold">
+            <BookOpen className="w-5 h-5 mr-2" /> Essay Help
           </button>
 
           {essayStep === "question" && (
             <div className="mt-4 space-y-2">
-              <label className="font-semibold block">Essay Question</label>
-              <textarea
-                rows={3}
-                className="w-full border rounded p-2 text-sm"
-                value={essayQuestion}
-                onChange={(e) => setEssayQuestion(e.target.value)}
-              />
+              <label className="font-semibold block">Upload Notes (PDF)</label>
               <input type="file" accept=".pdf" onChange={handleFileUpload} />
               <div className="space-y-1">
                 {fileNames.map((name, idx) => (
@@ -142,11 +127,6 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={generatePoints}
-                disabled={!essayQuestion.trim() || loading}
-                className="w-full bg-blue-500 text-white py-2 rounded-md mt-2 disabled:opacity-50"
-              >Generate Points</button>
             </div>
           )}
 
@@ -168,6 +148,23 @@ export default function Home() {
 
         <div className="w-3/4 flex flex-col justify-between">
           <div className="flex-1 p-6 overflow-y-auto">
+            {essayStep === "question" && (
+              <div className="mb-6">
+                <label className="block mb-2 font-semibold">Essay Question</label>
+                <textarea
+                  rows={4}
+                  value={essayQuestion}
+                  onChange={(e) => setEssayQuestion(e.target.value)}
+                  className="w-full border rounded p-2 text-sm mb-4"
+                />
+                <button
+                  onClick={generatePoints}
+                  disabled={!essayQuestion.trim() || loading}
+                  className="bg-blue-500 text-white py-2 px-4 rounded-md disabled:opacity-50"
+                >Generate Points</button>
+              </div>
+            )}
+
             {messages.map((m, i) => (
               <div key={i} className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}>
                 <p className={m.role === "assistant" ? "bg-gray-100 inline-block px-4 py-2 rounded-md" : "bg-blue-100 inline-block px-4 py-2 rounded-md"}>
@@ -186,7 +183,7 @@ export default function Home() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              className="flex-1 px-4 py-2 border rounded-full text-sm"
+              className="flex-1 px-4 py-4 border rounded-full text-sm"
             />
             <label className="cursor-pointer">
               <Paperclip className="text-gray-500 w-5 h-5" />
